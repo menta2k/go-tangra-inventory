@@ -1,10 +1,7 @@
 module go-tangra-inventory
 
-go 1.22
+go 1.22.6
 
-require github.com/yusufpapurcu/wmi v1.2.4
+require github.com/siderolabs/go-smbios v0.3.3
 
-require (
-	github.com/go-ole/go-ole v1.2.6 // indirect
-	golang.org/x/sys v0.1.0 // indirect
-)
+require github.com/google/uuid v1.6.0 // indirect

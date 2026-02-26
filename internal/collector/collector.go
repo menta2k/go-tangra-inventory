@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"os"
 	"time"
+
+	"github.com/siderolabs/go-smbios/smbios"
 )
 
-// Collect gathers a full hardware inventory from the local Windows host.
-// It attempts all collectors and returns partial results alongside any errors.
+// Collect gathers a full hardware inventory from the local host
+// using SMBIOS data.
 func Collect() (*Inventory, error) {
 	hostname, _ := os.Hostname()
 
@@ -16,34 +18,53 @@ func Collect() (*Inventory, error) {
 		Hostname:    hostname,
 	}
 
-	var errs []error
-
-	sys, err := collectSystemInfo()
+	s, err := smbios.New()
 	if err != nil {
-		errs = append(errs, fmt.Errorf("system: %w", err))
+		return inv, fmt.Errorf("opening SMBIOS: %w", err)
 	}
-	inv.System = sys
 
-	cpu, err := collectCPUInfo()
-	if err != nil {
-		errs = append(errs, fmt.Errorf("cpu: %w", err))
+	inv.SMBIOSVersion = VersionInfo{
+		Major:    s.Version.Major,
+		Minor:    s.Version.Minor,
+		Revision: s.Version.Revision,
 	}
-	inv.CPU = cpu
+	inv.BIOS = collectBIOSInfo(s)
+	inv.System = collectSystemInfo(s)
+	inv.Baseboard = collectBaseboardInfo(s)
+	inv.Chassis = collectChassisInfo(s)
+	inv.Processors = collectProcessorInfo(s)
+	inv.Memory = collectMemoryInfo(s)
 
-	mem, err := collectMemoryInfo()
-	if err != nil {
-		errs = append(errs, fmt.Errorf("memory: %w", err))
+	// Cache (Type 7)
+	for _, c := range s.CacheInformation {
+		inv.Cache = append(inv.Cache, CacheInfo{
+			SocketDesignation: c.SocketDesignation,
+		})
 	}
-	inv.Memory = mem
 
-	mon, err := collectMonitorInfo()
-	if err != nil {
-		errs = append(errs, fmt.Errorf("monitors: %w", err))
+	// Port connectors (Type 8)
+	for _, p := range s.PortConnectorInformation {
+		inv.Ports = append(inv.Ports, PortInfo{
+			InternalDesignator: p.InternalReferenceDesignator,
+			ExternalDesignator: p.ExternalReferenceDesignator,
+		})
 	}
-	inv.Monitors = mon
 
-	if len(errs) > 0 {
-		return inv, fmt.Errorf("collection errors: %v", errs)
+	// System slots (Type 9)
+	for _, sl := range s.SystemSlots {
+		inv.Slots = append(inv.Slots, SlotInfo{
+			Designation: sl.SlotDesignation,
+		})
 	}
+
+	// OEM strings (Type 11)
+	inv.OEMStrings = s.OEMStrings.Strings
+
+	// BIOS language (Type 13)
+	inv.BIOSLanguage = BIOSLanguageInfo{
+		CurrentLanguage:      s.BIOSLanguageInformation.CurrentLanguage,
+		InstallableLanguages: s.BIOSLanguageInformation.InstallableLanguages,
+	}
+
 	return inv, nil
 }

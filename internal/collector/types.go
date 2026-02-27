@@ -6,6 +6,7 @@ import "time"
 type Inventory struct {
 	CollectedAt   time.Time        `json:"collected_at"`
 	Hostname      string           `json:"hostname"`
+	Username      string           `json:"username"`
 	SMBIOSVersion VersionInfo      `json:"smbios_version"`
 	BIOS          BIOSInfo         `json:"bios"`
 	System        SystemInfo       `json:"system"`
@@ -18,6 +19,7 @@ type Inventory struct {
 	Slots         []SlotInfo       `json:"slots,omitempty"`
 	OEMStrings    []string         `json:"oem_strings,omitempty"`
 	BIOSLanguage  BIOSLanguageInfo `json:"bios_language,omitempty"`
+	Monitor       []MonitorInfo    `json:"monitor,omitempty"`
 }
 
 // VersionInfo holds the SMBIOS specification version.
@@ -48,13 +50,13 @@ type SystemInfo struct {
 
 // BaseboardInfo holds baseboard/motherboard details (Type 2).
 type BaseboardInfo struct {
-	Manufacturer    string `json:"manufacturer"`
-	Product         string `json:"product"`
-	Version         string `json:"version"`
-	SerialNumber    string `json:"serial_number"`
-	AssetTag        string `json:"asset_tag"`
+	Manufacturer      string `json:"manufacturer"`
+	Product           string `json:"product"`
+	Version           string `json:"version"`
+	SerialNumber      string `json:"serial_number"`
+	AssetTag          string `json:"asset_tag"`
 	LocationInChassis string `json:"location_in_chassis,omitempty"`
-	BoardType       string `json:"board_type"`
+	BoardType         string `json:"board_type"`
 }
 
 // ChassisInfo holds system enclosure/chassis details (Type 3).
@@ -106,23 +108,23 @@ type PhysicalMemoryArray struct {
 
 // MemoryModule holds details for a single physical memory DIMM (Type 17).
 type MemoryModule struct {
-	DeviceLocator         string `json:"device_locator"`
-	BankLocator           string `json:"bank_locator"`
-	CapacityBytes         uint64 `json:"capacity_bytes"`
-	FormFactor            string `json:"form_factor"`
-	MemoryType            string `json:"memory_type"`
-	TypeDetail            string `json:"type_detail,omitempty"`
-	SpeedMTs              uint16 `json:"speed_mt_s"`
-	ConfiguredSpeedMTs    uint16 `json:"configured_speed_mt_s"`
-	Manufacturer          string `json:"manufacturer"`
-	SerialNumber          string `json:"serial_number"`
-	AssetTag              string `json:"asset_tag"`
-	PartNumber            string `json:"part_number"`
-	MinimumVoltage        string `json:"minimum_voltage,omitempty"`
-	MaximumVoltage        string `json:"maximum_voltage,omitempty"`
-	ConfiguredVoltage     string `json:"configured_voltage,omitempty"`
-	TotalWidthBits        string `json:"total_width"`
-	DataWidthBits         string `json:"data_width"`
+	DeviceLocator      string `json:"device_locator"`
+	BankLocator        string `json:"bank_locator"`
+	CapacityBytes      uint64 `json:"capacity_bytes"`
+	FormFactor         string `json:"form_factor"`
+	MemoryType         string `json:"memory_type"`
+	TypeDetail         string `json:"type_detail,omitempty"`
+	SpeedMTs           uint16 `json:"speed_mt_s"`
+	ConfiguredSpeedMTs uint16 `json:"configured_speed_mt_s"`
+	Manufacturer       string `json:"manufacturer"`
+	SerialNumber       string `json:"serial_number"`
+	AssetTag           string `json:"asset_tag"`
+	PartNumber         string `json:"part_number"`
+	MinimumVoltage     string `json:"minimum_voltage,omitempty"`
+	MaximumVoltage     string `json:"maximum_voltage,omitempty"`
+	ConfiguredVoltage  string `json:"configured_voltage,omitempty"`
+	TotalWidthBits     string `json:"total_width"`
+	DataWidthBits      string `json:"data_width"`
 }
 
 // PortInfo holds port connector details (Type 8).
@@ -140,4 +142,11 @@ type SlotInfo struct {
 type BIOSLanguageInfo struct {
 	CurrentLanguage      string   `json:"current_language,omitempty"`
 	InstallableLanguages []string `json:"installable_languages,omitempty"`
+}
+
+// MonitorInfo holds connected display details.
+type MonitorInfo struct {
+	Manufacturer string `json:"manufacturer"`
+	Model        string `json:"model"`
+	SerialNumber string `json:"serial_number"`
 }

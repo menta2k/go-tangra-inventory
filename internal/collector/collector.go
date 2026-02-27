@@ -17,7 +17,18 @@ func Collect() (*Inventory, error) {
 		CollectedAt: time.Now().UTC(),
 		Hostname:    hostname,
 	}
-
+	monitorInfo, err := CollectMonitorInfo()
+	if err != nil {
+		fmt.Printf("warning: cannot collect monitor info: %v\n", err)
+	} else {
+		inv.Monitor = monitorInfo
+	}
+	userName, err := GetUserInfo()
+	if err != nil {
+		fmt.Printf("warning: cannot collect user info: %v\n", err)
+	} else {
+		inv.Username = userName
+	}
 	s, err := smbios.New()
 	if err != nil {
 		return inv, fmt.Errorf("opening SMBIOS: %w", err)

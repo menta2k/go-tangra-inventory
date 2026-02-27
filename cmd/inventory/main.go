@@ -36,6 +36,12 @@ func main() {
 		hostname = strings.ReplaceAll(hostname, string(os.PathSeparator), "_")
 		timestamp := time.Now().Format("20060102-150405")
 		filename := fmt.Sprintf("%s-%s.json", hostname, timestamp)
+		user, err := collector.GetUserInfo()
+		if err != nil {
+			fmt.Printf("warning: cannot get user info: %v\n", err)
+		} else {
+			filename = fmt.Sprintf("%s-%s.json", user, timestamp)
+		}
 		outputPath = filepath.Join(*outputDir, filename)
 
 		f, err := os.Create(outputPath)

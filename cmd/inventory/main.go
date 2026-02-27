@@ -5,12 +5,15 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
+	"strings"
+	"time"
 
 	"go-tangra-inventory/internal/collector"
 )
 
 func main() {
-	outputFile := flag.String("o", "", "write JSON output to file instead of stdout")
+	outputDir := flag.String("o", "", "directory path to save inventory JSON (filename: HOSTNAME-DATE-TIME.json)")
 	flag.Parse()
 
 	inv, err := collector.Collect()
@@ -19,8 +22,23 @@ func main() {
 	}
 
 	var w *os.File
-	if *outputFile != "" {
-		f, err := os.Create(*outputFile)
+	var outputPath string
+	if *outputDir != "" {
+		if err := os.MkdirAll(*outputDir, 0o755); err != nil {
+			fmt.Fprintf(os.Stderr, "error: cannot create output directory: %v\n", err)
+			os.Exit(1)
+		}
+
+		hostname := inv.Hostname
+		if hostname == "" {
+			hostname = "unknown"
+		}
+		hostname = strings.ReplaceAll(hostname, string(os.PathSeparator), "_")
+		timestamp := time.Now().Format("20060102-150405")
+		filename := fmt.Sprintf("%s-%s.json", hostname, timestamp)
+		outputPath = filepath.Join(*outputDir, filename)
+
+		f, err := os.Create(outputPath)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error: cannot create output file: %v\n", err)
 			os.Exit(1)
@@ -38,7 +56,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if *outputFile != "" {
-		fmt.Fprintf(os.Stderr, "inventory written to %s\n", *outputFile)
+	if outputPath != "" {
+		fmt.Fprintf(os.Stderr, "inventory written to %s\n", outputPath)
 	}
 }
